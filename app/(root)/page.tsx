@@ -10,9 +10,9 @@ const Home = async () => {
   return (
     <>
       <div className="text-red-400 pt-20 px-12">
-        <h1>Home</h1>
+       
 
-        <form
+        {/* <form
           className="px-10 pt-25"
           action={async () => {
             "use server";
@@ -20,7 +20,7 @@ const Home = async () => {
           }}
         >
           <Button type="submit" className="cursor-pointer">Log Out</Button>
-        </form>
+        </form> */}
       </div>
     </>
   );

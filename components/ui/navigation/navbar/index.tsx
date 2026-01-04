@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import Theme from "../Theme";
 import GlobalSearch from "../../extraaComponents/GlobalSearc";
+import MobileNavigation from "./MobileNavigation";
 
 
 const Navbar = () => {
@@ -16,7 +17,7 @@ const Navbar = () => {
             height={23}
             width={23}
           />
-          <p className="h2-bold font-space-grotesk text-dark-100 dark:text-light-900 hidden sm:block">
+          <p className="h2-bold font-space-grotesk text-dark-100 dark:text-light-900 max-sm:hidden">
             Dev<span className="text-primary-500">Flow</span>
           </p>
         </Link>
@@ -27,6 +28,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3 sm:gap-5 shrink-0">
           <Theme />
+          <MobileNavigation/>
         </div>
       </div>
     </nav>

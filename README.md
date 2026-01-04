@@ -1,6 +1,6 @@
 ## project started learning started
 
-## ES Lint Configuration
+## 1. ES Lint Configuration
 
 The beauty of JavaScript `Standard Style` is that it's simple. No one wants to maintain multiple hundred-line style configuration files for every module/project they work on. Enough of this madness!
 
@@ -74,7 +74,7 @@ export default defineConfig([
 ]);
 ```
 
-## structure the imports
+## 2. structure the imports
 
 `npm i eslint-plugin-import --save-dev --legacy-peer-deps`
 
@@ -157,7 +157,7 @@ export default defineConfig([
 ]);
 ```
 
-## Adding font
+## 3. Adding font
 
 **Step 1:** Download the desired font from google font
 
@@ -514,3 +514,463 @@ export default Home;
 ```
 
 _Remember:_ For Google authentication do the same as github from google console `oAuth section` from `Api`
+
+## 8. Creating a Form
+
+For creating a form we will use `React Hook Form`.
+
+To create a fully functiona; form there are x steps.
+
+**Step 1:** Create a new folder inside of the `form folder`.
+
+- 1.  Create `AuthForm.jsx` and define the schema for the form.
+
+```js
+import * as z from "zod";
+
+const formSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Bug title must be at least 5 characters.")
+    .max(32, "Bug title must be at most 32 characters."),
+  description: z
+    .string()
+    .min(20, "Description must be at least 20 characters.")
+    .max(100, "Description must be at most 100 characters."),
+});
+```
+
+**Step 2:** After schema creation create a `schema Validation` . This should be stored in the `lib` folder as `Validation.ts` and pass in the shape of the object.
+
+```js
+//validation.ts
+import { z } from "zod";
+
+export const SignInSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please provide a valid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "password must be at least 6 characters long." })
+    .max(100, { message: "Password cannot exceed 100 characters." }),
+});
+
+export const SignUpSchema = z.object({
+  username: z
+    .string()
+    .min(3, { message: "Username must be atleast 3 characters long." })
+    .max(30, { message: "Username cannot exceed 30 characters." })
+    .regex(/^[a-zA-Z0-9_]+$/, {
+      message: "Username can only contain letters, numbers, and underscores",
+    }),
+  name: z
+    .string()
+    .min(1, { message: "Name is required." })
+    .max(50, { message: "Name cannot exceed 50 characters." })
+    .regex(/^a-zA-Z0-9\s]+$/, {
+      message: "Name can only contain letters and spaces.",
+    }),
+  email: z
+    .string()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Please provide a valid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "password must be at least 6 characters long." })
+    .max(100, { message: "Password cannot exceed 100 characters." })
+    .regex(/[A-Z]/, {
+      message: "Password must contain at least one uppercase letter",
+    })
+    .regex(/[a-z]/, {
+      message: "Password must contain at least one lowercase letter.",
+    })
+    .regex(/[0-9]/, { message: "Password must contain at least one number." })
+    .regex(/[^a-zA-Z0-9]/, {
+      message: "Password must contain at least one special character.",
+    }),
+});
+```
+
+**Step 3:** Now go to the `signIn component` and pass some props as following.
+
+```js
+// sign-in
+
+"use client";
+
+import AuthForm from "@/components/forms/AuthForm";
+import { SignInSchema } from "@/lib/validations";
+import React from "react";
+
+const SignIn = () => {
+  return (
+    <AuthForm
+      formType="SIGN_IN"
+      schema={SignInSchema}
+      defaultValues={{ email: "", password: "" }}
+      onSubmit={(data) => Promise.resolve({ success: true, data })}
+    />
+  );
+};
+
+export default SignIn;
+```
+
+```js
+// sign-up
+"use client";
+
+import AuthForm from "@/components/forms/AuthForm";
+import { SignUpSchema } from "@/lib/validations";
+import React from "react";
+
+const SignUp = () => {
+  return (
+    <AuthForm
+      formType="SIGN_UP"
+      schema={SignUpSchema}
+      defaultValues={{ email: "", password: "", name: "", username: "" }}
+      onSubmit={(data) => Promise.resolve({ success: true, data })}
+    />
+  );
+};
+
+export default SignUp;
+```
+
+**Step 4:** Now we also need to pass these props to the `AuthForm.tsx` we need to define some types to make the typescript happy and also style and configure the form.
+
+```js
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Controller,
+  DefaultValues,
+  FieldValues,
+  Path,
+  SubmitHandler,
+  useForm,
+} from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
+
+import { Button } from "@/components/ui/button";
+
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import Link from "next/link";
+import ROUTES from "@/constants/routes";
+
+interface AuthFormProps<T extends FieldValues> {
+  schema: z.ZodType<T>;
+  defaultValues: T;
+  onSubmit: (data) => Promise<{ success: boolean }>;
+  formType: "SIGN_IN " | "SIGN_UP";
+}
+
+const AuthForm = <T extends FieldValues>({
+  schema,
+  defaultValues,
+  formType,
+  onSubmit,
+}: AuthFormProps<T>) => {
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: defaultValues as DefaultValues<T>,
+  });
+
+  const handleSubmit: SubmitHandler<T> = async () => {
+    // TODO: Authenticate
+  };
+
+  const buttonText = formType === "SIGN_IN " ? "Sign In" : "Sign Up";
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6 mt-10"
+      >
+        {Object.keys(defaultValues).map((field) => (
+          <FormField
+            key={field}
+            control={form.control}
+            name={field as Path<T>}
+            render={({ field }) => (
+              <FormItem className="flex w-full flex-col gap-2.5">
+                <FormLabel className="paragraph-medium text-dark400_light700">
+                  {field.name === "email"
+                    ? "Email Address"
+                    : field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    required
+                    type={field.name === "password" ? "password" : "text"}
+                    {...field}
+                    className="paragraph-regular background-light900_dark300 light-border-2 text-dark300_light700 no-focus min-h-12 rounded-1.5 border"
+                  />
+                </FormControl>
+
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
+
+        <Button
+          disabled={form.formState.isSubmitting}
+          className="primary-gradient paragraph-medium min-h-12 w-full rounded-2 px-4 py-3 font-inter text-light-900!"
+        >
+          {form.formState.isSubmitting
+            ? buttonText === "Sign In"
+              ? "Signing In..."
+              : "Signing Up..."
+            : buttonText}
+        </Button>
+
+        {formType === "SIGN_IN" ? (
+          <p>
+            Don't have an account?{" "}
+            <Link
+              href={ROUTES.SIGN_UP}
+              className="paragraph-semibold primary-text-gradient"
+            >
+              Sign Up
+            </Link>
+          </p>
+        ) : (
+          <p>
+            Already have an account?{" "}
+            <Link
+              href={ROUTES.SIGN_IN}
+              className="paragraph-semibold primary-text-gradient"
+            >
+              Sign In
+            </Link>
+          </p>
+        )}
+      </form>
+    </Form>
+
+
+  );
+};
+
+export default AuthForm;
+
+```
+
+## 9. Mobile Navigation & Side Bar
+
+For the sidebar and mobile navigation we will be using a component from `shadcn` that is called `sheet` run this command to install it `npx shadcn@latest add sheet`
+
+**Step 1:** Inside of the `navigation` folder inside `navbar` create a component called `MobileNavigation.tsx` and import it into the original `navbar` component.
+
+create the UI as follows:
+
+```js
+// MobileNavigation.tsx
+
+import React from "react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import Image from "next/image";
+import Link from "next/link";
+import ROUTES from "@/constants/routes";
+import { Button } from "../../button";
+import NavLinks from "./NavLinks";
+
+const MobileNavigation = () => {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Image
+          src="/icons/hamburger.svg"
+          alt="Menu"
+          height={36}
+          width={36}
+          className="invert-colors sm:hidden"
+        />
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="background-light900_dark200 border-none"
+      >
+        <SheetHeader>
+          <SheetTitle className="hidden">Navigation</SheetTitle>
+          <Link href="/" className="flex items-center gap-1">
+            <Image
+              src="/images/site-logo.svg"
+              width={23}
+              height={23}
+              alt="Logo"
+            />
+            <p className="h2-bold font-space-grotesk text-dark-100 dark:text-light-900 ">
+              Dev<span className="text-primary-500">Flow</span>
+            </p>
+          </Link>
+
+          <div className="no-scrollbar flex h-[calc(100vh-80px)] flex-col justify-between overflow-y-auto">
+            <SheetClose asChild>
+              <section className="flex h-full flex-col gap-6 pt-16">
+                <NavLinks isMobileNav />
+              </section>
+            </SheetClose>
+
+            <div className="flex flex-col gap-3">
+              <SheetClose asChild>
+                <Link href={ROUTES.SIGN_IN}>
+                  <Button className="small-medium btn-secondary min-h-10.25 w-full rounded-lg px-4 py-3 shadow-none">
+                    <span className="primary-text-gradient">Log In</span>
+                  </Button>
+                </Link>
+              </SheetClose>
+
+              <SheetClose asChild>
+                <Link href={ROUTES.SIGN_UP}>
+                  <Button className="small-medium light-border-2 btn-tertiary text-dark400_light900 min-h-10.25 w-full rounded-lg border px-4 py-3 shadow-none">
+                    Sign Up
+                  </Button>
+                </Link>
+              </SheetClose>
+            </div>
+          </div>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  );
+};
+
+export default MobileNavigation;
+```
+
+**Step 2:** Now for the links create a new component inside of the `navigation` folder inside `navbar` and call it as `NavLinks.tsx`.
+
+- 1. create a constants for the nav links:
+
+```js
+export const sidebarLinks = [
+  {
+    imageURL: "/icons/home.svg",
+    route: "/",
+    label: "Home",
+  },
+  {
+    imageURL: "/icons/users.svg",
+    route: "/community",
+    label: "Community",
+  },
+  {
+    imageURL: "/icons/star.svg",
+    route: "/collection",
+    label: "Collections",
+  },
+  {
+    imageURL: "/icons/suitcase.svg",
+    route: "/jobs",
+    label: "Find Jobs",
+  },
+  {
+    imageURL: "/icons/tag.svg",
+    route: "/tags",
+    label: "Tags",
+  },
+  {
+    imageURL: "/icons/user.svg",
+    route: "/profile",
+    label: "Profile",
+  },
+  {
+    imageURL: "/icons/question.svg",
+    route: "/ask-question",
+    label: "Ask a question",
+  },
+];
+```
+
+- 2. Now create the UI of the nav links to be displayed in sidebar
+
+```js
+"use client";
+import { sidebarLinks } from "@/constants";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
+import { SheetClose } from "../../sheet";
+const userId = 1;
+
+const NavLinks = ({ isMobileNav = false }: { isMobileNav?: boolean }) => {
+  const pathname = usePathname(); //This is to get the current url path
+  return (
+    <>
+      {sidebarLinks.map((item) => {
+        const isActive =
+          (pathname.includes(item.route) && item.route.length > 1) ||
+          pathname === item.route; //Determining wheather the component that is opened is same as the clicked one, this is to differentiate the current link from the others
+
+        if (item.route === "/profile") {
+          if (userId) item.route = `${item.route}/${userId}`;
+          else return null;
+        } //This is for the profile route as a dynamic route to refer to the correct url path and display the profile page
+
+        const LinkComponent = (
+          <Link
+            href={item.route}
+            key={item.label}
+            className={cn(
+              isActive
+                ? "primary-gradient rounded-lg text-light-900"
+                : "text-dark300_light900",
+              "flex items-center justify-start gap-4 bg-transparent p-4"
+            )}
+          >
+            <Image
+              src={item.imageURL}
+              alt={item.label}
+              width={20}
+              height={20}
+              className={cn({ "invert-colors": !isActive })}
+            />
+            <p
+              className={cn(
+                isActive ? "base-bold" : "base-medium",
+                !isMobileNav && "max-lg:hidden"
+              )}
+            >
+              {item.label}
+            </p>
+          </Link>
+        );
+        return isMobileNav ? (
+          <SheetClose asChild key={item.route}>
+            {LinkComponent}
+          </SheetClose>
+        ) : (
+          <React.Fragment key={item.route}>{LinkComponent}</React.Fragment>
+        ); //The above logic is for closing the sidebar automatically as soon as any link is clicked.
+      })}
+    </>
+  );
+};
+
+export default NavLinks;
+```
