@@ -975,4 +975,384 @@ const NavLinks = ({ isMobileNav = false }: { isMobileNav?: boolean }) => {
 export default NavLinks;
 ```
 
-## 10. 
+## 10. How to make higlight a link with respect to the btn clicked:
+
+```js
+"use client";
+import { sidebarLinks } from "@/constants";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
+import { SheetClose } from "../../sheet";
+const userId = 1;
+
+const NavLinks = ({ isMobileNav = false }: { isMobileNav?: boolean }) => {
+  const pathname = usePathname();
+  return (
+    <>
+      {sidebarLinks.map((item) => {
+        const isActive =
+          (pathname.includes(item.route) && item.route.length > 1) ||
+          pathname === item.route;
+
+        if (item.route === "/profile") {
+          if (userId) item.route = `${item.route}/${userId}`;
+          else return null;
+        } //This is the core logic of it
+
+        const LinkComponent = (
+          <Link
+            href={item.route}
+            key={item.label}
+            className={cn(
+              isActive
+                ? "primary-gradient rounded-lg text-light-900"
+                : "text-dark300_light900",
+              "flex items-center justify-start gap-4 bg-transparent p-4"
+            )} //Changing based on the condition
+          >
+            <Image
+              src={item.imageURL}
+              alt={item.label}
+              width={20}
+              height={20}
+              className={cn({ "invert-colors": !isActive })}
+            />
+            <p
+              className={cn(
+                isActive ? "base-bold" : "base-medium",
+                !isMobileNav && "max-lg:hidden"
+              )}
+            >
+              {item.label}
+            </p>
+          </Link>
+        );
+        return isMobileNav ? (
+          <SheetClose asChild key={item.route}>
+            {LinkComponent}
+          </SheetClose>
+        ) : (
+          <React.Fragment key={item.route}>{LinkComponent}</React.Fragment>
+        );
+      })}
+    </>
+  );
+};
+
+export default NavLinks;
+```
+
+## 11. Making a Right Sidebar
+
+**Step 1:** Make a `RightSidebar.tsx` component and import it into the `layout.tsx` of root. like this:
+
+```js
+const RootLayout = ({ children }: { children: ReactNode }) => {
+  return (
+    <main className="background-light850_dark100 relative">
+      <Navbar />
+      <div className="flex">
+        <LeftSidebar />
+        <section className="flex min-h-screen flex-1 flex-col px-6 pb-6 pt-36 max-md:pb-14 sm:px-14">
+          <div className="mx-auto w-full max-w-5xl">{children}</div>
+        </section>
+        <RightSidebar />
+      </div>
+    </main>
+  );
+};
+```
+
+**Step 2:** Now build the UI of `RightSidebar`
+
+```js
+import ROUTES from "@/constants/routes";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
+const hotQuestions = [
+  { _id: "1", title: "How to create a custom hook in React?" },
+  {
+    _id: "2",
+    title: "What is the difference between useEffect and useLayoutEffect?",
+  },
+  { _id: "3", title: "How does React reconciliation work?" },
+  { _id: "4", title: "When should you use useMemo and useCallback?" },
+  {
+    _id: "5",
+    title: "How to optimize performance in large React applications?",
+  },
+  {
+    _id: "6",
+    title: "What are controlled vs uncontrolled components in React?",
+  },
+];
+
+const RightSidebar = () => {
+  return (
+    <section className="pt-36 custom-scrollbar background-light900_dark200 light-border sticky right-0 top-0 flex h-screen w-87.5 flex-col gap-6 overflow-y-auto border-l p-6 shadow-light-300 dark:shadow-none max-xl:hidden">
+      <div>
+        <h3 className="h3-bold text-dark200_light900">Top Questions</h3>
+        <div className="mt-7 flex w-full flex-col gap-7.5">
+          {hotQuestions.map(({ _id, title }) => (
+            <Link
+              key={_id}
+              href={ROUTES.PROFILE(_id)}
+              className="flex cursor-pointer items-center justify-between gap-7"
+            >
+              <p className="body-medium text-dark500_light700">{title}</p>
+              <Image
+                src="/icons/chevron-right.svg"
+                alt="chevron"
+                height={20}
+                width={20}
+              />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default RightSidebar;
+```
+
+**Step1:** Now make a component for tag elements as `TagCard.tsx` inside of the `card` folder inside the `components` folder. This for displaying the tags for this we will be using the `badge` component from `shadcn`
+
+### To make the dynamic badge/tagcard
+
+- 1.  Step1: Define the tag card in the component where it is to be used and also declare the array of data for the card and also define the tag coomponent
+
+```js
+const popularTags = [
+  { _id: "1", name: "react", questions: 100 },
+  { _id: "2", name: "javascript", questions: 245 },
+  { _id: "3", name: "typescript", questions: 180 },
+  { _id: "4", name: "nextjs", questions: 120 },
+  { _id: "5", name: "tailwindcss", questions: 95 },
+  { _id: "6", name: "nodejs", questions: 160 },
+  { _id: "7", name: "mongodb", questions: 88 },
+  { _id: "8", name: "git", questions: 70 },
+];
+```
+
+- 2. Also define the component where it is to be used by mapping over the data:
+
+```js
+ <div className="mt-16">
+        <h3 className="h3-bold text-dark200_light900  ">Popular Tags</h3>
+        <div className="mt-7 flex flex-col gap-4">
+            {popularTags.map(({_id, name, questions})=>(
+                <TagCard key={_id} _id={_id} name={name} questions={questions} showCount compact />
+            ))}
+        </div>
+```
+
+- 3. Build the `TagCard` now to make the icons show dynamically we will be using a library called `Devicon` from here we can easily get the icons of whatever we want.
+
+```js
+//Step1: Paste this into the main root Layuout where there is theme toggler below the html in head:
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+/>;
+
+// Step 2: After this we need to create a map Object in utile.ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { techMap } from "./techMap";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export const getDeviconClassName = (techName: string) => {
+  const normalizedTechName = techName.replace(/[ .]/g, "").toLowerCase();
+  // const techmMap is written separately in techMap.ts inside the lib folder
+  return techMap[normalizedTechName]
+    ? `${techMap[normalizedTechName]} colored`
+    : "devicon-devicon-plain";
+};
+
+//Step 3: Now use it in the TagCard
+
+//First get the deviconclassName
+const iconClass = getDeviconClassName(name);
+//Then use it it the icon tag
+<i className={`${iconClass} text-sm`}></i>;
+```
+
+```js
+export const techMap: { [key: string]: string } = {
+  /* ================= LANGUAGES ================= */
+  javascript: "devicon-javascript-plain",
+  js: "devicon-javascript-plain",
+
+  typescript: "devicon-typescript-plain",
+  ts: "devicon-typescript-plain",
+
+  python: "devicon-python-plain",
+
+  java: "devicon-java-plain",
+
+  c: "devicon-c-plain",
+  cpp: "devicon-cplusplus-plain",
+  "c++": "devicon-cplusplus-plain",
+
+  csharp: "devicon-csharp-plain",
+  "c#": "devicon-csharp-plain",
+
+  go: "devicon-go-plain",
+  golang: "devicon-go-plain",
+
+  php: "devicon-php-plain",
+
+  ruby: "devicon-ruby-plain",
+
+  kotlin: "devicon-kotlin-plain",
+
+  swift: "devicon-swift-plain",
+
+  rust: "devicon-rust-plain",
+
+  dart: "devicon-dart-plain",
+
+  scala: "devicon-scala-plain",
+
+  /* ================= FRONTEND ================= */
+  html: "devicon-html5-plain",
+  html5: "devicon-html5-plain",
+
+  css: "devicon-css3-plain",
+  css3: "devicon-css3-plain",
+
+  sass: "devicon-sass-original",
+  scss: "devicon-sass-original",
+
+  tailwind: "devicon-tailwindcss-plain",
+  tailwindcss: "devicon-tailwindcss-plain",
+
+  bootstrap: "devicon-bootstrap-plain",
+
+  react: "devicon-react-original",
+  reactjs: "devicon-react-original",
+
+  next: "devicon-nextjs-original",
+  nextjs: "devicon-nextjs-original",
+
+  vue: "devicon-vuejs-plain",
+  vuejs: "devicon-vuejs-plain",
+
+  angular: "devicon-angularjs-plain",
+
+  svelte: "devicon-svelte-plain",
+
+  redux: "devicon-redux-original",
+
+  three: "devicon-threejs-original",
+  threejs: "devicon-threejs-original",
+  "three.js": "devicon-threejs-original",
+
+  /* ================= BACKEND ================= */
+  node: "devicon-nodejs-plain",
+  nodejs: "devicon-nodejs-plain",
+
+  express: "devicon-express-original",
+  expressjs: "devicon-express-original",
+
+  nest: "devicon-nestjs-plain",
+  nestjs: "devicon-nestjs-plain",
+
+  django: "devicon-django-plain",
+
+  flask: "devicon-flask-original",
+
+  spring: "devicon-spring-plain",
+  springboot: "devicon-spring-plain",
+
+  laravel: "devicon-laravel-plain",
+
+  graphql: "devicon-graphql-plain",
+
+  /* ================= DATABASE ================= */
+  mongodb: "devicon-mongodb-plain",
+  mongo: "devicon-mongodb-plain",
+
+  mysql: "devicon-mysql-plain",
+
+  postgresql: "devicon-postgresql-plain",
+  postgres: "devicon-postgresql-plain",
+
+  sqlite: "devicon-sqlite-plain",
+
+  redis: "devicon-redis-plain",
+
+  firebase: "devicon-firebase-plain",
+
+  supabase: "devicon-supabase-plain",
+
+  /* ================= DEVOPS / CLOUD ================= */
+  docker: "devicon-docker-plain",
+
+  kubernetes: "devicon-kubernetes-plain",
+  k8s: "devicon-kubernetes-plain",
+
+  aws: "devicon-amazonwebservices-original",
+
+  azure: "devicon-azure-plain",
+
+  gcp: "devicon-googlecloud-plain",
+  googlecloud: "devicon-googlecloud-plain",
+
+  vercel: "devicon-vercel-original",
+
+  netlify: "devicon-netlify-plain",
+
+  nginx: "devicon-nginx-original",
+
+  /* ================= TOOLS ================= */
+  git: "devicon-git-plain",
+
+  github: "devicon-github-original",
+
+  gitlab: "devicon-gitlab-plain",
+
+  vscode: "devicon-vscode-plain",
+
+  figma: "devicon-figma-plain",
+
+  postman: "devicon-postman-plain",
+
+  eslint: "devicon-eslint-original",
+
+  prettier: "devicon-prettier-plain",
+
+  webpack: "devicon-webpack-plain",
+
+  vite: "devicon-vitejs-plain",
+
+  babel: "devicon-babel-plain",
+
+  npm: "devicon-npm-original-wordmark",
+
+  yarn: "devicon-yarn-plain",
+
+  pnpm: "devicon-pnpm-plain",
+
+  /* ================= MOBILE ================= */
+  reactnative: "devicon-react-original",
+
+  flutter: "devicon-flutter-plain",
+
+  android: "devicon-android-plain",
+
+  ios: "devicon-apple-original",
+};
+```
+
+

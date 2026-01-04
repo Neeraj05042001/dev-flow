@@ -9,9 +9,8 @@ const Home = async () => {
 
   return (
     <>
-      <div className="text-red-400 pt-20 px-12">
-       
-
+      <div className="text-red-400 pt-60 px-42">
+        <h1>Home</h1>
         {/* <form
           className="px-10 pt-25"
           action={async () => {
