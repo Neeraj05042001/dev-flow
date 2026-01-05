@@ -1,6 +1,7 @@
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/constants/routes";
+import Link from "next/link";
 import React from "react";
 
 const Home = async () => {
@@ -9,17 +10,23 @@ const Home = async () => {
 
   return (
     <>
-      <div className="text-red-400 pt-60 px-42">
-        <h1>Home</h1>
-        {/* <form
-          className="px-10 pt-25"
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: ROUTES.SIGN_IN });
-          }}
+      <section className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
+        <h1 className="h1-bold text-dark100_light900">All Questions</h1>
+        <Button
+          className="primary-gradient min-h-11.5 py-2 text-light-900!"
+          asChild
         >
-          <Button type="submit" className="cursor-pointer">Log Out</Button>
-        </form> */}
+          <Link href={ROUTES.ASK_QUESTIONS}>Ask a Question</Link>
+        </Button>
+      </section>
+      <section className="">LocalSearch</section>
+
+      <div className="mt-10 flex w-full flex-col gap-6">
+        <p>Question Card</p>
+        <p>Question Card</p>
+        <p>Question Card</p>
+        <p>Question Card</p>
+        <p>Question Card</p>
       </div>
     </>
   );

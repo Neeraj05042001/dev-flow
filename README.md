@@ -1356,3 +1356,21 @@ export const techMap: { [key: string]: string } = {
 ```
 
 
+## 12. 
+
+```js
+
+<form
+          className="px-10 pt-25"
+          action={async () => {
+            "use server";
+            await signOut({ redirectTo: ROUTES.SIGN_IN });
+          }}
+        >
+          <Button type="submit" className="cursor-pointer">Log Out</Button>
+        </form>
+
+
+```
+
+## 13. Creating Homepage
