@@ -1664,3 +1664,117 @@ const Home = async ({ searchParams }: SearchParams) => {
 
 export default Home;
 ```
+
+## Implementing `HomeFilters`
+
+**Step 1** Create a folder name `filters` in the component folder and then create a component named `HomeFilters.tsx`
+
+**Step 2:** Now build the UI and write the logic
+
+```js
+// HomeFilters.tsx
+"use client";
+
+import React, { useState } from "react";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
+import { useRouter, useSearchParams } from "next/navigation";
+import { formUrlQuery, removeKeysFromQuery } from "@/lib/url";
+
+const filters = [
+  { name: "Newest", value: "newest" },
+  { name: "Popular", value: "popular" },
+  { name: "Unanswered", value: "unanswered" },
+  { name: "Recommended", value: "recommended" },
+];
+const HomeFilters = () => {
+  const searchParams = useSearchParams();
+  const filterParams = searchParams.get("filter");
+  const [isActive, setIsActive] = useState(filterParams || "");
+  const router = useRouter();
+
+  const handleTypeClick = (filter: string) => {
+    let newUrl = "";
+    if (filter === isActive) {
+      setIsActive("");
+      newUrl = removeKeysFromQuery({
+        params: searchParams.toString(),
+        keysToRemove: ["filter"],
+      });
+    } else {
+      setIsActive(filter);
+      newUrl = formUrlQuery({
+        params: searchParams.toString(),
+        key: "filter",
+        value: filter.toLowerCase(),
+      });
+      router.push(newUrl, { scroll: false });
+    }
+  };
+  return (
+    <div className="mt-10 hidden flex-wrap gap-3 sm:flex">
+      {filters.map((filter) => (
+        <Button
+          key={filter.name}
+          className={
+            (cn(
+              "body-medium rounded-lg px-6 py-3 capitalize shadow-none cursor-pointer"
+            ),
+            isActive == filter.value
+              ? "bg-primary-100 text-primary-500 hover:bg-primary-100 dark:bg-dark-400 dark:text-primary-500 dark:hover:bg-dark-400"
+              : "bg-light-100 text-light-500 hover:bg-light-800 dark:bg-dark-300 dark:text-light-500 dark:hover:bg-dark-300")
+          }
+          onClick={() => handleTypeClick(filter.value)}
+        >
+          {filter.name}
+        </Button>
+      ))}
+    </div>
+  );
+};
+
+export default HomeFilters;
+```
+
+```js
+// url.ts
+import qs from "query-string";
+
+interface UrlQueryParams {
+  params: string;
+  key: string;
+  value: string;
+}
+
+interface RemoveUrlQueryParams {
+  params: string;
+  keysToRemove: [];
+}
+export const formUrlQuery = ({ params, key, value }: UrlQueryParams) => {
+  const queryString = qs.parse(params);
+  queryString[key] = value;
+  return qs.stringifyUrl({
+    url: window.location.pathname,
+    query: queryString,
+  });
+};
+
+export const removeKeysFromQuery = ({
+  params,
+  keysToRemove,
+}: RemoveUrlQueryParams) => {
+  const queryString = qs.parse(params);
+
+  keysToRemove.forEach((key) => {
+    delete queryString[key];
+  });
+
+  return qs.stringifyUrl(
+    {
+      url: window.location.pathname,
+      query: queryString,
+    },
+    { skipNull: true }
+  );
+};
+```
