@@ -1,4 +1,5 @@
 import { auth, signOut } from "@/auth";
+import QuestionsCard from "@/components/crads/QuestionsCard";
 import HomeFilters from "@/components/filters/HomeFilters";
 import LocalSearch from "@/components/search/LocalSearch";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,12 @@ const questions = [
       { _id: "1", name: "React" },
       { _id: "2", name: "JavaScript" },
     ],
-    author: { _id: "1", name: "John Doe" },
+    author: {
+      _id: "1",
+      name: "John Doe",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 10,
     answers: 5,
     views: 100,
@@ -28,7 +34,8 @@ const questions = [
       { _id: "3", name: "React" },
       { _id: "4", name: "Hooks" },
     ],
-    author: { _id: "2", name: "Neeraj Kumar" },
+    author: { _id: "2", name: "Neeraj Kumar",image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4", },
     upvotes: 24,
     answers: 7,
     views: 340,
@@ -42,7 +49,12 @@ const questions = [
       { _id: "5", name: "JavaScript" },
       { _id: "6", name: "Performance" },
     ],
-    author: { _id: "3", name: "Alex Smith" },
+    author: {
+      _id: "3",
+      name: "Alex Smith",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 18,
     answers: 4,
     views: 210,
@@ -56,7 +68,12 @@ const questions = [
       { _id: "7", name: "Authentication" },
       { _id: "8", name: "JWT" },
     ],
-    author: { _id: "4", name: "Rahul Verma" },
+    author: {
+      _id: "4",
+      name: "Rahul Verma",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 32,
     answers: 9,
     views: 520,
@@ -70,7 +87,12 @@ const questions = [
       { _id: "9", name: "CSS" },
       { _id: "10", name: "Tailwind" },
     ],
-    author: { _id: "5", name: "Priya Sharma" },
+    author: {
+      _id: "5",
+      name: "Priya Sharma",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 15,
     answers: 6,
     views: 190,
@@ -84,7 +106,12 @@ const questions = [
       { _id: "11", name: "Next.js" },
       { _id: "12", name: "Rendering" },
     ],
-    author: { _id: "6", name: "Amit Patel" },
+    author: {
+      _id: "6",
+      name: "Amit Patel",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 21,
     answers: 3,
     views: 260,
@@ -98,7 +125,12 @@ const questions = [
       { _id: "13", name: "React" },
       { _id: "14", name: "Architecture" },
     ],
-    author: { _id: "7", name: "Sophia Lee" },
+    author: {
+      _id: "7",
+      name: "Sophia Lee",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 29,
     answers: 8,
     views: 410,
@@ -112,7 +144,12 @@ const questions = [
       { _id: "15", name: "JavaScript" },
       { _id: "16", name: "Optimization" },
     ],
-    author: { _id: "8", name: "Daniel Brown" },
+    author: {
+      _id: "8",
+      name: "Daniel Brown",
+      image:
+        "https://avatars.githubusercontent.com/u/115901952?s=400&u=5c259fc934b20458502e1745e98dffe7a155c68b&v=4",
+    },
     upvotes: 26,
     answers: 6,
     views: 380,
@@ -163,7 +200,7 @@ const Home = async ({ searchParams }: SearchParams) => {
       <HomeFilters />
       <div className="mt-10 flex w-full flex-col gap-6">
         {filterQuestions.map((question) => (
-          <h1 key={question._id}>{question.title}</h1>
+          <QuestionsCard key={question._id} question={question} />
         ))}
       </div>
     </>
