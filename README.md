@@ -1355,22 +1355,312 @@ export const techMap: { [key: string]: string } = {
 };
 ```
 
-
-## 12. 
+## 12.
 
 ```js
-
 <form
-          className="px-10 pt-25"
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: ROUTES.SIGN_IN });
-          }}
-        >
-          <Button type="submit" className="cursor-pointer">Log Out</Button>
-        </form>
-
-
+  className="px-10 pt-25"
+  action={async () => {
+    "use server";
+    await signOut({ redirectTo: ROUTES.SIGN_IN });
+  }}
+>
+  <Button type="submit" className="cursor-pointer">
+    Log Out
+  </Button>
+</form>
 ```
 
 ## 13. Creating Homepage
+
+## 14. Implementing `LocalSearchBa`
+
+For this we will be using a library called `query string`
+
+**Step 1:** Install the library `npm install query-string`
+
+**Step 2:** `LocalSearch.tsx`
+
+```js
+// url.ts
+
+import qs from "query-string";
+
+interface UrlQueryParams {
+  params: string;
+  key: string;
+  value: string;
+}
+
+interface RemoveUrlQueryParams {
+  params: string;
+  keysToRemove: [];
+}
+export const formUrlQuery = ({ params, key, value }: UrlQueryParams) => {
+  const queryString = qs.parse(params);
+  queryString[key] = value;
+  return qs.stringifyUrl({
+    url: window.location.pathname,
+    query: queryString,
+  });
+};
+
+export const removeKeysFromQuery = ({
+  params,
+  keysToRemove,
+}: RemoveUrlQueryParams) => {
+  const queryString = qs.parse(params);
+
+  keysToRemove.forEach((key) => {
+    delete queryString[key];
+  });
+
+  return qs.stringifyUrl(
+    {
+      url: window.location.pathname,
+      query: queryString,
+    },
+    { skipNull: true }
+  );
+};
+```
+
+**Step 3:** `LocalSearch.tsx`
+
+```js
+"use client";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import { Input } from "../ui/input";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { formUrlQuery, removeKeysFromQuery } from "@/lib/url";
+
+interface Props {
+  route: string;
+  imgSrc: string;
+  placeholder: string;
+  otherClasses?: string;
+}
+
+const LocalSearch = ({ route, imgSrc, placeholder, otherClasses }: Props) => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") || "";
+
+  const [searchQuery, setSearchQuery] = useState(query);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery) {
+        const newUrl = formUrlQuery({
+          params: searchParams.toString(),
+          key: "query",
+          value: searchQuery,
+        });
+        router.push(newUrl, { scroll: true });
+      } else {
+        if (pathname === route) {
+          const newUrl = removeKeysFromQuery({
+            params: searchParams.toString(),
+            keysToRemove: ["query"],
+          });
+          router.push(newUrl, { scroll: false });
+        }
+      }
+    }, 1000);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, router, route, searchParams, pathname]);
+  return (
+    <div
+      className={`background-light800_darkgradient flex min-h-14 grow items-center gap-4 rounded-[10px] px-4 ${otherClasses}`}
+    >
+      <Image
+        src={imgSrc}
+        alt="search"
+        height={24}
+        width={24}
+        className="cursor-pointer"
+      />
+
+      <Input
+        type="text"
+        placeholder={placeholder}
+        value={searchQuery}
+        onChange={(e) => {
+          setSearchQuery(e.target.value);
+        }}
+        className="paragraph-regular no-focus placeholder text-dark400_light700 border-none shadow-none outline-none "
+      />
+    </div>
+  );
+};
+
+export default LocalSearch;
+```
+
+**Step 4:** Usage
+
+```js
+import { auth, signOut } from "@/auth";
+import LocalSearch from "@/components/search/LocalSearch";
+import { Button } from "@/components/ui/button";
+import ROUTES from "@/constants/routes";
+import Link from "next/link";
+import React from "react";
+const questions = [
+  {
+    _id: "1",
+    title: "How to learn React?",
+    description: "I want to learn React, can anyone help me?",
+    tags: [
+      { _id: "1", name: "React" },
+      { _id: "2", name: "JavaScript" },
+    ],
+    author: { _id: "1", name: "John Doe" },
+    upvotes: 10,
+    answers: 5,
+    views: 100,
+    createdAt: new Date("2025-12-20"),
+  },
+  {
+    _id: "2",
+    title: "Difference between useEffect and useLayoutEffect",
+    description: "When should I use useLayoutEffect over useEffect?",
+    tags: [
+      { _id: "3", name: "React" },
+      { _id: "4", name: "Hooks" },
+    ],
+    author: { _id: "2", name: "Neeraj Kumar" },
+    upvotes: 24,
+    answers: 7,
+    views: 340,
+    createdAt: new Date("2025-12-18"),
+  },
+  {
+    _id: "3",
+    title: "What is debouncing in JavaScript?",
+    description: "Can someone explain debouncing with a real-world example?",
+    tags: [
+      { _id: "5", name: "JavaScript" },
+      { _id: "6", name: "Performance" },
+    ],
+    author: { _id: "3", name: "Alex Smith" },
+    upvotes: 18,
+    answers: 4,
+    views: 210,
+    createdAt: new Date("2025-12-15"),
+  },
+  {
+    _id: "4",
+    title: "How does JWT authentication work?",
+    description: "I'm confused about how JWT works between browser and server.",
+    tags: [
+      { _id: "7", name: "Authentication" },
+      { _id: "8", name: "JWT" },
+    ],
+    author: { _id: "4", name: "Rahul Verma" },
+    upvotes: 32,
+    answers: 9,
+    views: 520,
+    createdAt: new Date("2025-12-12"),
+  },
+  {
+    _id: "5",
+    title: "Tailwind CSS vs CSS Modules",
+    description: "Which styling approach is better for scalable projects?",
+    tags: [
+      { _id: "9", name: "CSS" },
+      { _id: "10", name: "Tailwind" },
+    ],
+    author: { _id: "5", name: "Priya Sharma" },
+    upvotes: 15,
+    answers: 6,
+    views: 190,
+    createdAt: new Date("2025-12-10"),
+  },
+  {
+    _id: "6",
+    title: "Why is my Next.js page re-rendering multiple times?",
+    description: "My component keeps re-rendering when using useSearchParams.",
+    tags: [
+      { _id: "11", name: "Next.js" },
+      { _id: "12", name: "Rendering" },
+    ],
+    author: { _id: "6", name: "Amit Patel" },
+    upvotes: 21,
+    answers: 3,
+    views: 260,
+    createdAt: new Date("2025-12-08"),
+  },
+  {
+    _id: "7",
+    title: "Best way to structure a large React project",
+    description: "How should I structure folders for scalability?",
+    tags: [
+      { _id: "13", name: "React" },
+      { _id: "14", name: "Architecture" },
+    ],
+    author: { _id: "7", name: "Sophia Lee" },
+    upvotes: 29,
+    answers: 8,
+    views: 410,
+    createdAt: new Date("2025-12-05"),
+  },
+  {
+    _id: "8",
+    title: "What is memoization and when to use it?",
+    description: "I want to understand memoization from basics to advanced.",
+    tags: [
+      { _id: "15", name: "JavaScript" },
+      { _id: "16", name: "Optimization" },
+    ],
+    author: { _id: "8", name: "Daniel Brown" },
+    upvotes: 26,
+    answers: 6,
+    views: 380,
+    createdAt: new Date("2025-12-02"),
+  },
+];
+
+interface SearchParams {
+  searchParams: Promise<{ [key: string]: string }>;
+}
+const Home = async ({ searchParams }: SearchParams) => {
+  const { query = "" } = await searchParams;
+
+  const filterQuestions = questions.filter((question) =>
+    question.title.toLowerCase().includes(query?.toLowerCase())
+  );
+  return (
+    <>
+      <section className="flex w-full flex-col-reverse justify-between gap-4 sm:flex-row sm:items-center">
+        <h1 className="h1-bold text-dark100_light900">All Questions</h1>
+        <Button
+          className="primary-gradient min-h-11.5 py-2 text-light-900!"
+          asChild
+        >
+          <Link href={ROUTES.ASK_QUESTIONS}>Ask a Question</Link>
+        </Button>
+      </section>
+      <section className="mt-11">
+        <LocalSearch
+          route="/"
+          imgSrc="/icons/search.svg"
+          placeholder="search questions"
+          otherClasses="flex-1"
+        />
+      </section>
+
+      <div className="mt-10 flex w-full flex-col gap-6">
+        {filterQuestions.map((question) => (
+          <h1 key={question._id}>{question.title}</h1>
+        ))}
+      </div>
+    </>
+  );
+};
+
+export default Home;
+```
